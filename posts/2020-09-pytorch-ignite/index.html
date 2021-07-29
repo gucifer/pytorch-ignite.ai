@@ -1,0 +1,1005 @@
+<!doctype html><html lang=en-us><head><script async src="https://www.googletagmanager.com/gtag/js?id=G-5FELLLFHCP"></script><script>var doNotTrack=!1;if(!doNotTrack){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date),gtag('config','G-5FELLLFHCP',{anonymize_ip:!1})}</script><meta property="og:title" content="Introduction to PyTorch-Ignite"><meta property="og:description" content="This post is a general introduction of PyTorch-Ignite. It intends to give a brief but illustrative overview of what PyTorch-Ignite can offer for Deep Learning enthusiasts, professionals and researchers. Following the same philosophy as PyTorch, PyTorch-Ignite aims to keep it simple, flexible and extensible but performant and scalable.
+Throughout this tutorial, we will introduce the basic concepts of PyTorch-Ignite with the training and evaluation of a MNIST classifier as a beginner application case. We also assume that the reader is familiar with PyTorch.
+This tutorial can be also executed in Google Colab."><meta property="og:type" content="article"><meta property="og:url" content="https://pytorch-ignite.ai/posts/2020-09-pytorch-ignite/"><meta property="og:image" content="https://pytorch-ignite.ai/images/logos/ignite_logo_feature.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2020-09-10T00:00:00+00:00"><meta property="article:modified_time" content="2021-07-28T20:53:28+06:30"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://pytorch-ignite.ai/images/logos/ignite_logo_feature.png"><meta name=twitter:title content="Introduction to PyTorch-Ignite"><meta name=twitter:description content="This post is a general introduction of PyTorch-Ignite. It intends to give a brief but illustrative overview of what PyTorch-Ignite can offer for Deep Learning enthusiasts, professionals and researchers. Following the same philosophy as PyTorch, PyTorch-Ignite aims to keep it simple, flexible and extensible but performant and scalable.
+Throughout this tutorial, we will introduce the basic concepts of PyTorch-Ignite with the training and evaluation of a MNIST classifier as a beginner application case. We also assume that the reader is familiar with PyTorch.
+This tutorial can be also executed in Google Colab."><meta name=description content="High-level library to help with training and evaluating neural networks in PyTorch flexibly and transparently."><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><title>Introduction to PyTorch-Ignite | PyTorch-Ignite</title><link rel=stylesheet type=text/css href=/css/style.min.125203f72a92a60311cb74c041a2ee40c9a6af792496be325e393ab46013c90b.css integrity="sha256-ElID9yqSpgMRy3TAQaLuQMmmr3kklr4yXjk6tGATyQs="><link rel=stylesheet type=text/css href=/css/icons.css><link rel=stylesheet href=/css/custom.min.6024e3fad9853c08d3544a80b38ec38fd361bbe7fd6208a2f7e780625ee6bffb.css><link rel=icon type=image/svg+xml href=/images/logos/ignite_logomark.svg><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oxygen:wght@300;400;700&display=swap" rel=stylesheet><link rel=stylesheet href=/css/post.min.7c70644b5b6f3c0b88498e4c668433eebb6d6ebb7e465f9371f41bf3e4431f03.css></head><body><nav class="navbar is-fresh is-transparent no-shadow" role=navigation aria-label="main navigation"><div class=container><div class=navbar-brand><a class=navbar-item href=/><img src=/images/logos/ignite_logomark.svg alt width=112 height=28></a>
+<a class="navbar-item is-hidden-desktop is-hidden-tablet"><div id=menu-icon-wrapper class=menu-icon-wrapper style=visibility:visible><svg width="1e3" height="1e3"><path class="path1" d="M3e2 4e2H7e2c2e2.0 2e2 350-1e2 450A4e2 4e2.0 012e2 2e2L8e2 8e2"/><path class="path2" d="M3e2 5e2H7e2"/><path class="path3" d="M7e2 6e2H3e2c-2e2.0-2e2-4e2 1e2-450A4e2 380 0 112e2 8e2L8e2 2e2"/></svg><button id=menu-icon-trigger class=menu-icon-trigger></button></div></a><a role=button class=navbar-burger aria-label=menu aria-expanded=false data-target=navbar-menu><span aria-hidden=true></span><span aria-hidden=true></span><span aria-hidden=true></span></a></div><div id=navbar-menu class="navbar-menu is-static"><div class=navbar-start><a class="navbar-item is-hidden-mobile"><div id=menu-icon-wrapper class=menu-icon-wrapper style=visibility:visible><svg width="1e3" height="1e3"><path class="path1" d="M3e2 4e2H7e2c2e2.0 2e2 350-1e2 450A4e2 4e2.0 012e2 2e2L8e2 8e2"/><path class="path2" d="M3e2 5e2H7e2"/><path class="path3" d="M7e2 6e2H3e2c-2e2.0-2e2-4e2 1e2-450A4e2 380 0 112e2 8e2L8e2 2e2"/></svg><button id=menu-icon-trigger class=menu-icon-trigger></button></div></a></div><div class=navbar-end><div class="navbar-item has-dropdown is-hoverable"><a class=navbar-link>Docs</a><div class=navbar-dropdown><a href=/guide/ class=navbar-item>Guide</a>
+<a href=/tutorials/ class=navbar-item>Tutorials</a></div></div><a href=https://github.com/pytorch/ignite class="navbar-item is-secondary">GitHub</a>
+<a href=/posts/ class="navbar-item is-secondary">Blog</a>
+<a href=/community class="navbar-item is-secondary">Community</a></div></div></div></nav><section class="section is-medium has-sidebar"><div class="container sidebar-on"><div class=columns><div class="column is-centered-tablet-portrait"><div class=date><span class=sr-only>Published on</span>
+September 10, 2020</div><h1 class=post-title>Introduction to PyTorch-Ignite</h1><div class=post-image><img src=https://i.ibb.co/x8Bhqhj/habr-pytorch-ignite-image.png alt="Ignite your PyTorch neural networks image"></div><h5 class="subtitle is-muted is-5"></h5><div class=divider></div><div class="mt-20 tags"><span class=tag><a href=/tags/deep-learning>Deep Learning</a></span>
+<span class=tag><a href=/tags/labs>Labs</a></span>
+<span class=tag><a href=/tags/machine-learning>Machine Learning</a></span>
+<span class=tag><a href=/tags/neural-networks>Neural Networks</a></span>
+<span class=tag><a href=/tags/python>Python</a></span>
+<span class=tag><a href=/tags/pytorch>PyTorch</a></span>
+<span class=tag><a href=/tags/pytorch-ignite>PyTorch-Ignite</a></span>
+<span class=tag><a href=/tags/tutorial>Tutorial</a></span></div><div>Last updated: 2021-07-28</div></div></div><div class=content><p>This post is a general introduction of PyTorch-Ignite. It intends to give a brief but illustrative overview of what PyTorch-Ignite can offer for Deep Learning enthusiasts, professionals and researchers. Following the same philosophy as PyTorch, PyTorch-Ignite aims to keep it simple, flexible and extensible but performant and scalable.</p><p>Throughout this tutorial, we will introduce the basic concepts of PyTorch-Ignite with the training and evaluation of a MNIST classifier as a beginner application case. We also assume that the reader is familiar with PyTorch.</p><p><a href=https://colab.research.google.com/drive/1gFIPXmUX73HWlLSxFvvYEweQBD_OPx1t>This tutorial can be also executed in Google Colab.</a></p><h2 id=pytorch-ignite-what-and-why->PyTorch-Ignite: What and Why ?</h2><p>PyTorch-Ignite is a high-level library to help with training and evaluating neural networks in PyTorch flexibly and transparently.</p><p>PyTorch-Ignite is designed to be at the crossroads of high-level Plug & Play features and under-the-hood expansion possibilities. PyTorch-Ignite aims to improve the deep learning community&rsquo;s technical skills by promoting best practices. Things are not hidden behind a divine tool that does everything, but remain within the reach of users.</p><p>PyTorch-Ignite takes a &ldquo;Do-It-Yourself&rdquo; approach as research is unpredictable and it is important to capture its requirements without blocking things.</p><h2 id=-pytorch--ignite->🔥 PyTorch + Ignite 🔥</h2><p>PyTorch-Ignite wraps native PyTorch abstractions such as Modules, Optimizers, and DataLoaders in thin abstractions which allow your models to be separated from their training framework completely. This is achieved by a way of inverting control using an abstraction known as the <strong>Engine</strong>. The <strong>Engine</strong> is responsible for running an arbitrary function - typically a training or evaluation function - and emitting events along the way.</p><p>A built-in event system represented by the <strong>Events</strong> class ensures <code>Engine</code>&rsquo;s flexibility, thus facilitating interaction on each step of the run. With this approach users can completely customize the flow of events during the run.</p><p>In summary, PyTorch-Ignite is</p><ul><li>Extremely simple engine and event system = Training loop abstraction</li><li>Out-of-the-box metrics to easily evaluate models</li><li>Built-in handlers to compose training pipelines, save artifacts and log parameters and metrics</li></ul><p>Additional benefits of using PyTorch-Ignite are</p><ul><li>Less code than pure PyTorch while ensuring maximum control and simplicity</li><li>More modular code</li></ul><table><thead><tr><th style=text-align:center>PyTorch-Ignite</th><th style=text-align:center>PyTorch</th></tr></thead></table><p><img src=https://raw.githubusercontent.com/pytorch/ignite/master/assets/ignite_vs_bare_pytorch.png alt=pytorch-ignite-vs-pytorch></p><h3 id=about-the-design-of-pytorch-ignite>About the design of PyTorch-Ignite</h3><p>PyTorch-Ignite allows you to compose your application without being focused on a super multi-purpose object, but rather on weakly coupled components allowing advanced customization.</p><p>The design of the library is guided by:</p><ul><li>Anticipating new software or use-cases to come in in the future without centralizing everything in a single class.</li><li>Avoiding configurations with a ton of parameters that are complicated to manage and maintain.</li><li>Providing tools targeted to maximizing cohesion and minimizing coupling.</li><li>Keeping it simple.</li></ul><h2 id=quick-start-example>Quick-start example</h2><p>In this section we will use PyTorch-Ignite to build and train a classifier of the well-known MNIST dataset. This simple example will introduce the principal concepts behind PyTorch-Ignite.</p><p>For additional information and details about the API, please, refer to the project&rsquo;s <a href=https://pytorch.org/ignite/>documentation</a>.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-sh data-lang=sh>pip install pytorch-ignite
+</code></pre></td></tr></table></div></div><h3 id=common-pytorch-code>Common PyTorch code</h3><p>First, we define our model, training and validation datasets, optimizer and loss function:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>import</span> <span class=nn>os</span>
+<span class=kn>import</span> <span class=nn>torch</span>
+<span class=kn>import</span> <span class=nn>torch.nn</span> <span class=kn>as</span> <span class=nn>nn</span>
+<span class=kn>import</span> <span class=nn>torch.nn.functional</span> <span class=kn>as</span> <span class=nn>F</span>
+<span class=kn>from</span> <span class=nn>torch.optim</span> <span class=kn>import</span> <span class=n>SGD</span>
+<span class=kn>from</span> <span class=nn>torch.utils.data</span> <span class=kn>import</span> <span class=n>DataLoader</span>
+
+<span class=kn>from</span> <span class=nn>torchvision.transforms</span> <span class=kn>import</span> <span class=n>Compose</span><span class=p>,</span> <span class=n>ToTensor</span><span class=p>,</span> <span class=n>Normalize</span>
+<span class=kn>from</span> <span class=nn>torchvision.datasets</span> <span class=kn>import</span> <span class=n>MNIST</span>
+
+<span class=c1># transform to normalize the data</span>
+<span class=n>transform</span> <span class=o>=</span> <span class=n>Compose</span><span class=p>([</span><span class=n>ToTensor</span><span class=p>(),</span> <span class=n>Normalize</span><span class=p>((</span><span class=mf>0.1307</span><span class=p>,),</span> <span class=p>(</span><span class=mf>0.3081</span><span class=p>,))])</span>
+
+<span class=c1># Download and load the training data</span>
+<span class=n>trainset</span> <span class=o>=</span> <span class=n>MNIST</span><span class=p>(</span><span class=s2>&#34;data&#34;</span><span class=p>,</span> <span class=n>download</span><span class=o>=</span><span class=bp>True</span><span class=p>,</span> <span class=n>train</span><span class=o>=</span><span class=bp>True</span><span class=p>,</span> <span class=n>transform</span><span class=o>=</span><span class=n>transform</span><span class=p>)</span>
+<span class=n>train_loader</span> <span class=o>=</span> <span class=n>DataLoader</span><span class=p>(</span><span class=n>trainset</span><span class=p>,</span> <span class=n>batch_size</span><span class=o>=</span><span class=mi>128</span><span class=p>,</span> <span class=n>shuffle</span><span class=o>=</span><span class=bp>True</span><span class=p>)</span>
+
+<span class=c1># Download and load the test data</span>
+<span class=n>validationset</span> <span class=o>=</span> <span class=n>MNIST</span><span class=p>(</span><span class=s2>&#34;data&#34;</span><span class=p>,</span> <span class=n>train</span><span class=o>=</span><span class=bp>False</span><span class=p>,</span> <span class=n>transform</span><span class=o>=</span><span class=n>transform</span><span class=p>)</span>
+<span class=n>val_loader</span> <span class=o>=</span> <span class=n>DataLoader</span><span class=p>(</span><span class=n>validationset</span><span class=p>,</span> <span class=n>batch_size</span><span class=o>=</span><span class=mi>256</span><span class=p>,</span> <span class=n>shuffle</span><span class=o>=</span><span class=bp>False</span><span class=p>)</span>
+
+<span class=c1># Define a class of CNN model (as you want)</span>
+<span class=k>class</span> <span class=nc>Net</span><span class=p>(</span><span class=n>nn</span><span class=o>.</span><span class=n>Module</span><span class=p>):</span>
+    <span class=k>def</span> <span class=fm>__init__</span><span class=p>(</span><span class=bp>self</span><span class=p>):</span>
+        <span class=nb>super</span><span class=p>(</span><span class=n>Net</span><span class=p>,</span> <span class=bp>self</span><span class=p>)</span><span class=o>.</span><span class=fm>__init__</span><span class=p>()</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>conv1</span> <span class=o>=</span> <span class=n>nn</span><span class=o>.</span><span class=n>Conv2d</span><span class=p>(</span><span class=mi>1</span><span class=p>,</span> <span class=mi>10</span><span class=p>,</span> <span class=n>kernel_size</span><span class=o>=</span><span class=mi>5</span><span class=p>)</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>conv2</span> <span class=o>=</span> <span class=n>nn</span><span class=o>.</span><span class=n>Conv2d</span><span class=p>(</span><span class=mi>10</span><span class=p>,</span> <span class=mi>20</span><span class=p>,</span> <span class=n>kernel_size</span><span class=o>=</span><span class=mi>5</span><span class=p>)</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>conv2_drop</span> <span class=o>=</span> <span class=n>nn</span><span class=o>.</span><span class=n>Dropout2d</span><span class=p>()</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>fc1</span> <span class=o>=</span> <span class=n>nn</span><span class=o>.</span><span class=n>Linear</span><span class=p>(</span><span class=mi>320</span><span class=p>,</span> <span class=mi>50</span><span class=p>)</span>
+        <span class=bp>self</span><span class=o>.</span><span class=n>fc2</span> <span class=o>=</span> <span class=n>nn</span><span class=o>.</span><span class=n>Linear</span><span class=p>(</span><span class=mi>50</span><span class=p>,</span> <span class=mi>10</span><span class=p>)</span>
+
+    <span class=k>def</span> <span class=nf>forward</span><span class=p>(</span><span class=bp>self</span><span class=p>,</span> <span class=n>x</span><span class=p>):</span>
+        <span class=n>x</span> <span class=o>=</span> <span class=n>F</span><span class=o>.</span><span class=n>relu</span><span class=p>(</span><span class=n>F</span><span class=o>.</span><span class=n>max_pool2d</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>conv1</span><span class=p>(</span><span class=n>x</span><span class=p>),</span> <span class=mi>2</span><span class=p>))</span>
+        <span class=n>x</span> <span class=o>=</span> <span class=n>F</span><span class=o>.</span><span class=n>relu</span><span class=p>(</span><span class=n>F</span><span class=o>.</span><span class=n>max_pool2d</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>conv2_drop</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>conv2</span><span class=p>(</span><span class=n>x</span><span class=p>)),</span> <span class=mi>2</span><span class=p>))</span>
+        <span class=n>x</span> <span class=o>=</span> <span class=n>x</span><span class=o>.</span><span class=n>view</span><span class=p>(</span><span class=o>-</span><span class=mi>1</span><span class=p>,</span> <span class=mi>320</span><span class=p>)</span>
+        <span class=n>x</span> <span class=o>=</span> <span class=n>F</span><span class=o>.</span><span class=n>relu</span><span class=p>(</span><span class=bp>self</span><span class=o>.</span><span class=n>fc1</span><span class=p>(</span><span class=n>x</span><span class=p>))</span>
+        <span class=n>x</span> <span class=o>=</span> <span class=n>F</span><span class=o>.</span><span class=n>dropout</span><span class=p>(</span><span class=n>x</span><span class=p>,</span> <span class=n>training</span><span class=o>=</span><span class=bp>self</span><span class=o>.</span><span class=n>training</span><span class=p>)</span>
+        <span class=n>x</span> <span class=o>=</span> <span class=bp>self</span><span class=o>.</span><span class=n>fc2</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+        <span class=k>return</span> <span class=n>F</span><span class=o>.</span><span class=n>log_softmax</span><span class=p>(</span><span class=n>x</span><span class=p>,</span> <span class=n>dim</span><span class=o>=-</span><span class=mi>1</span><span class=p>)</span>
+
+<span class=n>device</span> <span class=o>=</span> <span class=s2>&#34;cuda&#34;</span>
+
+<span class=c1># Define a model on move it on CUDA device</span>
+<span class=n>model</span> <span class=o>=</span> <span class=n>Net</span><span class=p>()</span><span class=o>.</span><span class=n>to</span><span class=p>(</span><span class=n>device</span><span class=p>)</span>
+
+<span class=c1># Define a NLL loss</span>
+<span class=n>criterion</span> <span class=o>=</span> <span class=n>nn</span><span class=o>.</span><span class=n>NLLLoss</span><span class=p>()</span>
+
+<span class=c1># Define a SGD optimizer</span>
+<span class=n>optimizer</span> <span class=o>=</span> <span class=n>SGD</span><span class=p>(</span><span class=n>model</span><span class=o>.</span><span class=n>parameters</span><span class=p>(),</span> <span class=n>lr</span><span class=o>=</span><span class=mf>0.01</span><span class=p>,</span> <span class=n>momentum</span><span class=o>=</span><span class=mf>0.8</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>The above code is pure PyTorch and is typically user-defined and is required for any pipeline.</p><h2 id=trainer-and-evaluators-setup>Trainer and evaluator&rsquo;s setup</h2><p><code>model</code>&rsquo;s trainer is an engine that loops multiple times over the training dataset and updates model parameters. Let&rsquo;s see how we define such a trainer using PyTorch-Ignite. To do this, PyTorch-Ignite introduces the generic class <code>Engine</code> that is an abstraction that loops over the provided data, executes a processing function and returns a result. The only argument needed to construct the trainer is a <code>train_step</code> function.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.engine</span> <span class=kn>import</span> <span class=n>Engine</span>
+
+<span class=k>def</span> <span class=nf>train_step</span><span class=p>(</span><span class=n>engine</span><span class=p>,</span> <span class=n>batch</span><span class=p>):</span>
+    <span class=n>x</span><span class=p>,</span> <span class=n>y</span> <span class=o>=</span> <span class=n>batch</span>
+    <span class=n>x</span> <span class=o>=</span> <span class=n>x</span><span class=o>.</span><span class=n>to</span><span class=p>(</span><span class=n>device</span><span class=p>)</span>
+    <span class=n>y</span> <span class=o>=</span> <span class=n>y</span><span class=o>.</span><span class=n>to</span><span class=p>(</span><span class=n>device</span><span class=p>)</span>
+
+    <span class=n>model</span><span class=o>.</span><span class=n>train</span><span class=p>()</span>
+    <span class=n>y_pred</span> <span class=o>=</span> <span class=n>model</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+    <span class=n>loss</span> <span class=o>=</span> <span class=n>criterion</span><span class=p>(</span><span class=n>y_pred</span><span class=p>,</span> <span class=n>y</span><span class=p>)</span>
+
+    <span class=n>optimizer</span><span class=o>.</span><span class=n>zero_grad</span><span class=p>()</span>
+    <span class=n>loss</span><span class=o>.</span><span class=n>backward</span><span class=p>()</span>
+    <span class=n>optimizer</span><span class=o>.</span><span class=n>step</span><span class=p>()</span>
+
+    <span class=k>return</span> <span class=n>loss</span>
+
+<span class=c1># Define a trainer engine</span>
+<span class=n>trainer</span> <span class=o>=</span> <span class=n>Engine</span><span class=p>(</span><span class=n>train_step</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>Please note that <code>train_step</code> function must accept <code>engine</code> and <code>batch</code> arguments. In the example above, <code>engine</code> is not used inside <code>train_step</code>, but we can easily imagine a use-case where we would like to fetch certain information like current iteration, epoch or custom variables from the engine.</p><p>Similarly, model evaluation can be done with an engine that runs a single time over the validation dataset and computes metrics.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=k>def</span> <span class=nf>validation_step</span><span class=p>(</span><span class=n>engine</span><span class=p>,</span> <span class=n>batch</span><span class=p>):</span>
+    <span class=n>model</span><span class=o>.</span><span class=n>eval</span><span class=p>()</span>
+    <span class=k>with</span> <span class=n>torch</span><span class=o>.</span><span class=n>no_grad</span><span class=p>():</span>
+        <span class=n>x</span><span class=p>,</span> <span class=n>y</span> <span class=o>=</span> <span class=n>batch</span><span class=p>[</span><span class=mi>0</span><span class=p>],</span> <span class=n>batch</span><span class=p>[</span><span class=mi>1</span><span class=p>]</span>
+        <span class=n>x</span> <span class=o>=</span> <span class=n>x</span><span class=o>.</span><span class=n>to</span><span class=p>(</span><span class=s2>&#34;cuda&#34;</span><span class=p>)</span>
+        <span class=n>y</span> <span class=o>=</span> <span class=n>y</span><span class=o>.</span><span class=n>to</span><span class=p>(</span><span class=s2>&#34;cuda&#34;</span><span class=p>)</span>
+
+        <span class=n>y_pred</span> <span class=o>=</span> <span class=n>model</span><span class=p>(</span><span class=n>x</span><span class=p>)</span>
+
+        <span class=k>return</span> <span class=n>y_pred</span><span class=p>,</span> <span class=n>y</span>
+
+<span class=n>evaluator</span> <span class=o>=</span> <span class=n>Engine</span><span class=p>(</span><span class=n>validation_step</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>This allows the construction of training logic from the simplest to the most complicated scenarios.</p><p>The type of output of the process functions (i.e. <code>loss</code> or <code>y_pred, y</code> in the above examples) is not restricted. These functions can return everything the user wants. Output is set to an engine&rsquo;s internal object <code>engine.state.output</code> and can be used further for any type of processing.</p><h2 id=events-and-handers>Events and Handers</h2><p>To improve the engine’s flexibility, a configurable event system is introduced to facilitate the interaction on each step of the run. Namely, <code>Engine</code> allows to add handlers on various <code>Events</code> that are triggered during the run. When an event is triggered, attached handlers (named functions, lambdas, class functions) are executed. Here is a schema for when built-in events are triggered by default:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=n>fire_event</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>STARTED</span><span class=p>)</span>
+<span class=k>while</span> <span class=n>epoch</span> <span class=o>&lt;</span> <span class=n>max_epochs</span><span class=p>:</span>
+    <span class=n>fire_event</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_STARTED</span><span class=p>)</span>
+    <span class=c1># run once on data</span>
+    <span class=k>for</span> <span class=n>batch</span> <span class=ow>in</span> <span class=n>data</span><span class=p>:</span>
+        <span class=n>fire_event</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>ITERATION_STARTED</span><span class=p>)</span>
+
+        <span class=n>output</span> <span class=o>=</span> <span class=n>process_function</span><span class=p>(</span><span class=n>batch</span><span class=p>)</span>
+
+        <span class=n>fire_event</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>ITERATION_COMPLETED</span><span class=p>)</span>
+    <span class=n>fire_event</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>)</span>
+<span class=n>fire_event</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>COMPLETED</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>Note that each engine (i.e. <code>trainer</code> and <code>evaluator</code>) has its own event system which allows to define its own engine&rsquo;s process logic.</p><p>Using <code>Events</code> and handlers, it is possible to completely customize the engine&rsquo;s runs in a very intuitive way:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.engine</span> <span class=kn>import</span> <span class=n>Events</span>
+
+<span class=c1># Show a message when the training begins</span>
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>STARTED</span><span class=p>)</span>
+<span class=k>def</span> <span class=nf>start_message</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Start training!&#34;</span><span class=p>)</span>
+
+<span class=c1># Handler can be want you want, here a lambda !</span>
+<span class=n>trainer</span><span class=o>.</span><span class=n>add_event_handler</span><span class=p>(</span>
+    <span class=n>Events</span><span class=o>.</span><span class=n>COMPLETED</span><span class=p>,</span>
+    <span class=k>lambda</span> <span class=n>_</span><span class=p>:</span> <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Training completed!&#34;</span><span class=p>)</span>
+<span class=p>)</span>
+
+<span class=c1># Run evaluator on val_loader every trainer&#39;s epoch completed</span>
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>)</span>
+<span class=k>def</span> <span class=nf>run_validation</span><span class=p>():</span>
+    <span class=n>evaluator</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>val_loader</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>In the code above, the <code>run_validation</code> function is attached to the <code>trainer</code> and will be triggered at each completed epoch to launch <code>model</code>&rsquo;s validation with <code>evaluator</code>. This shows that engines can be embedded to create complex pipelines.</p><p>Handlers offer unparalleled flexibility compared to callbacks as they can be any function: e.g., a lambda, a simple function, a class method, etc. Thus, we do not require to inherit from an interface and override its abstract methods which could unnecessarily bulk up your code and its complexity.</p><p>The possibilities of customization are endless as PyTorch-Ignite allows you to get hold of your application workflow. As mentioned before, there is no magic nor fully automatated things in PyTorch-Ignite.</p><h2 id=model-evaluation-metrics>Model evaluation metrics</h2><p>Metrics are another nice example of what the handlers for PyTorch-Ignite are and how to use them. In our example, we use the built-in metrics <code>Accuracy</code> and <code>Loss</code>.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.metrics</span> <span class=kn>import</span> <span class=n>Accuracy</span><span class=p>,</span> <span class=n>Loss</span>
+
+<span class=c1># Accuracy and loss metrics are defined</span>
+<span class=n>val_metrics</span> <span class=o>=</span> <span class=p>{</span>
+  <span class=s2>&#34;accuracy&#34;</span><span class=p>:</span> <span class=n>Accuracy</span><span class=p>(),</span>
+  <span class=s2>&#34;loss&#34;</span><span class=p>:</span> <span class=n>Loss</span><span class=p>(</span><span class=n>criterion</span><span class=p>)</span>
+<span class=p>}</span>
+
+<span class=c1># Attach metrics to the evaluator</span>
+<span class=k>for</span> <span class=n>name</span><span class=p>,</span> <span class=n>metric</span> <span class=ow>in</span> <span class=n>val_metrics</span><span class=o>.</span><span class=n>items</span><span class=p>():</span>
+    <span class=n>metric</span><span class=o>.</span><span class=n>attach</span><span class=p>(</span><span class=n>evaluator</span><span class=p>,</span> <span class=n>name</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>PyTorch-Ignite metrics can be elegantly combined with each other.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.metrics</span> <span class=kn>import</span> <span class=n>Precision</span><span class=p>,</span> <span class=n>Recall</span>
+
+<span class=c1># Build F1 score</span>
+<span class=n>precision</span> <span class=o>=</span> <span class=n>Precision</span><span class=p>(</span><span class=n>average</span><span class=o>=</span><span class=bp>False</span><span class=p>)</span>
+<span class=n>recall</span> <span class=o>=</span> <span class=n>Recall</span><span class=p>(</span><span class=n>average</span><span class=o>=</span><span class=bp>False</span><span class=p>)</span>
+<span class=n>F1</span> <span class=o>=</span> <span class=p>(</span><span class=n>precision</span> <span class=o>*</span> <span class=n>recall</span> <span class=o>*</span> <span class=mi>2</span> <span class=o>/</span> <span class=p>(</span><span class=n>precision</span> <span class=o>+</span> <span class=n>recall</span><span class=p>))</span><span class=o>.</span><span class=n>mean</span><span class=p>()</span>
+
+<span class=c1># and attach it to evaluator</span>
+<span class=n>F1</span><span class=o>.</span><span class=n>attach</span><span class=p>(</span><span class=n>evaluator</span><span class=p>,</span> <span class=s2>&#34;f1&#34;</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>To make general things even easier, helper methods are available for the creation of a supervised Engine as above. Thus, let&rsquo;s define another evaluator applied to the training dataset in this way.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.engine</span> <span class=kn>import</span> <span class=n>create_supervised_evaluator</span>
+
+<span class=c1># Define another evaluator with default validation function and attach metrics</span>
+<span class=n>train_evaluator</span> <span class=o>=</span> <span class=n>create_supervised_evaluator</span><span class=p>(</span><span class=n>model</span><span class=p>,</span> <span class=n>metrics</span><span class=o>=</span><span class=n>val_metrics</span><span class=p>,</span> <span class=n>device</span><span class=o>=</span><span class=s2>&#34;cuda&#34;</span><span class=p>)</span>
+
+<span class=c1># Run train_evaluator on train_loader every trainer&#39;s epoch completed</span>
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>)</span>
+<span class=k>def</span> <span class=nf>run_train_validation</span><span class=p>():</span>
+    <span class=n>train_evaluator</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>train_loader</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>The reason why we want to have two separate evaluators (<code>evaluator</code> and <code>train_evaluator</code>) is that they can have different attached handlers and logic to perform. For example, if we would like store the best model defined by the validation metric value, this role is delegated to <code>evaluator</code> which computes metrics over the validation dataset.</p><h2 id=common-training-handlers>Common training handlers</h2><p>From now on, we have <code>trainer</code> which will call evaluators <code>evaluator</code> and <code>train_evaluator</code> at every completed epoch. Thus, each evaluator will run and compute corresponding metrics. In addition, it would be very helpful to have a display of the results that shows those metrics.</p><p>Using the customization potential of the engine&rsquo;s system, we can add simple handlers for this logging purpose:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=nd>@evaluator.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>COMPLETED</span><span class=p>)</span>
+<span class=k>def</span> <span class=nf>log_validation_results</span><span class=p>():</span>
+    <span class=n>metrics</span> <span class=o>=</span> <span class=n>evaluator</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>metrics</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Validation Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f} Avg F1: {:.2f}&#34;</span>
+          <span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>,</span> <span class=n>metrics</span><span class=p>[</span><span class=s2>&#34;accuracy&#34;</span><span class=p>],</span> <span class=n>metrics</span><span class=p>[</span><span class=s2>&#34;loss&#34;</span><span class=p>],</span> <span class=n>metrics</span><span class=p>[</span><span class=s2>&#34;f1&#34;</span><span class=p>]))</span>
+
+<span class=nd>@train_evaluator.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>COMPLETED</span><span class=p>)</span>
+<span class=k>def</span> <span class=nf>log_train_results</span><span class=p>():</span>
+    <span class=n>metrics</span> <span class=o>=</span> <span class=n>train_evaluator</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>metrics</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;  Training Results - Epoch: {}  Avg accuracy: {:.2f} Avg loss: {:.2f}&#34;</span>
+          <span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>,</span> <span class=n>metrics</span><span class=p>[</span><span class=s2>&#34;accuracy&#34;</span><span class=p>],</span> <span class=n>metrics</span><span class=p>[</span><span class=s2>&#34;loss&#34;</span><span class=p>]))</span>
+</code></pre></td></tr></table></div></div><p>Here we attached <code>log_validation_results</code> and <code>log_train_results</code> handlers on <code>Events.COMPLETED</code> since <code>evaluator</code> and <code>train_evaluator</code> will run a single epoch over the validation datasets.</p><p>Let&rsquo;s see how to add some others helpful features to our application.</p><ul><li>PyTorch-Ignite provides a <code>ProgressBar</code> handler to show an engine&rsquo;s progression.</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.contrib.handlers</span> <span class=kn>import</span> <span class=n>ProgressBar</span>
+
+<span class=n>ProgressBar</span><span class=p>()</span><span class=o>.</span><span class=n>attach</span><span class=p>(</span><span class=n>trainer</span><span class=p>,</span> <span class=n>output_transform</span><span class=o>=</span><span class=k>lambda</span> <span class=n>x</span><span class=p>:</span> <span class=p>{</span><span class=s1>&#39;batch loss&#39;</span><span class=p>:</span> <span class=n>x</span><span class=p>})</span>
+</code></pre></td></tr></table></div></div><ul><li><code>ModelCheckpoint</code> handler can be used to periodically save objects which have an attribute <code>state_dict</code>.</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.handlers</span> <span class=kn>import</span> <span class=n>ModelCheckpoint</span><span class=p>,</span> <span class=n>global_step_from_engine</span>
+
+<span class=c1># Score function to select relevant metric, here f1</span>
+<span class=k>def</span> <span class=nf>score_function</span><span class=p>(</span><span class=n>engine</span><span class=p>):</span>
+    <span class=k>return</span> <span class=n>engine</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>metrics</span><span class=p>[</span><span class=s2>&#34;f1&#34;</span><span class=p>]</span>
+
+<span class=c1># Checkpoint to store n_saved best models wrt score function</span>
+<span class=n>model_checkpoint</span> <span class=o>=</span> <span class=n>ModelCheckpoint</span><span class=p>(</span>
+    <span class=s2>&#34;quick-start-mnist-output&#34;</span><span class=p>,</span>
+    <span class=n>n_saved</span><span class=o>=</span><span class=mi>2</span><span class=p>,</span>
+    <span class=n>filename_prefix</span><span class=o>=</span><span class=s2>&#34;best&#34;</span><span class=p>,</span>
+    <span class=n>score_function</span><span class=o>=</span><span class=n>score_function</span><span class=p>,</span>
+    <span class=n>score_name</span><span class=o>=</span><span class=s2>&#34;f1&#34;</span><span class=p>,</span>
+    <span class=n>global_step_transform</span><span class=o>=</span><span class=n>global_step_from_engine</span><span class=p>(</span><span class=n>trainer</span><span class=p>),</span>
+<span class=p>)</span>
+
+<span class=c1># Save the model (if relevant) every epoch completed of evaluator</span>
+<span class=n>evaluator</span><span class=o>.</span><span class=n>add_event_handler</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>COMPLETED</span><span class=p>,</span> <span class=n>model_checkpoint</span><span class=p>,</span> <span class=p>{</span><span class=s2>&#34;model&#34;</span><span class=p>:</span> <span class=n>model</span><span class=p>})</span>
+</code></pre></td></tr></table></div></div><ul><li>PyTorch-Ignite provides wrappers to modern tools to track experiments. For example, <code>TensorBoardLogger</code> handler allows to log metric results, model&rsquo;s and optimizer&rsquo;s parameters, gradients, and more during the training and validation for TensorBoard.</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.contrib.handlers</span> <span class=kn>import</span> <span class=n>TensorboardLogger</span>
+
+<span class=c1># Define a Tensorboard logger</span>
+<span class=n>tb_logger</span> <span class=o>=</span> <span class=n>TensorboardLogger</span><span class=p>(</span><span class=n>log_dir</span><span class=o>=</span><span class=s2>&#34;quick-start-mnist-output&#34;</span><span class=p>)</span>
+
+<span class=c1># Attach handler to plot trainer&#39;s loss every 100 iterations</span>
+<span class=n>tb_logger</span><span class=o>.</span><span class=n>attach_output_handler</span><span class=p>(</span>
+    <span class=n>trainer</span><span class=p>,</span>
+    <span class=n>event_name</span><span class=o>=</span><span class=n>Events</span><span class=o>.</span><span class=n>ITERATION_COMPLETED</span><span class=p>(</span><span class=n>every</span><span class=o>=</span><span class=mi>100</span><span class=p>),</span>
+    <span class=n>tag</span><span class=o>=</span><span class=s2>&#34;training&#34;</span><span class=p>,</span>
+    <span class=n>output_transform</span><span class=o>=</span><span class=k>lambda</span> <span class=n>loss</span><span class=p>:</span> <span class=p>{</span><span class=s2>&#34;batchloss&#34;</span><span class=p>:</span> <span class=n>loss</span><span class=p>},</span>
+<span class=p>)</span>
+
+<span class=c1># Attach handler to dump evaluator&#39;s metrics every epoch completed</span>
+<span class=k>for</span> <span class=n>tag</span><span class=p>,</span> <span class=n>evaluator</span> <span class=ow>in</span> <span class=p>[(</span><span class=s2>&#34;training&#34;</span><span class=p>,</span> <span class=n>train_evaluator</span><span class=p>),</span> <span class=p>(</span><span class=s2>&#34;validation&#34;</span><span class=p>,</span> <span class=n>evaluator</span><span class=p>)]:</span>
+    <span class=n>tb_logger</span><span class=o>.</span><span class=n>attach_output_handler</span><span class=p>(</span>
+        <span class=n>evaluator</span><span class=p>,</span>
+        <span class=n>event_name</span><span class=o>=</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>,</span>
+        <span class=n>tag</span><span class=o>=</span><span class=n>tag</span><span class=p>,</span>
+        <span class=n>metric_names</span><span class=o>=</span><span class=s2>&#34;all&#34;</span><span class=p>,</span>
+        <span class=n>global_step_transform</span><span class=o>=</span><span class=n>global_step_from_engine</span><span class=p>(</span><span class=n>trainer</span><span class=p>),</span>
+    <span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>It is possible to extend the use of the TensorBoard logger very simply by integrating user-defined functions. For example, here is how to display images and predictions during training:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>import</span> <span class=nn>matplotlib.pyplot</span> <span class=kn>as</span> <span class=nn>plt</span>
+
+<span class=c1># Store predictions and scores using matplotlib</span>
+<span class=k>def</span> <span class=nf>predictions_gt_images_handler</span><span class=p>(</span><span class=n>engine</span><span class=p>,</span> <span class=n>logger</span><span class=p>,</span> <span class=o>*</span><span class=n>args</span><span class=p>,</span> <span class=o>**</span><span class=n>kwargs</span><span class=p>):</span>
+    <span class=n>x</span><span class=p>,</span> <span class=n>_</span> <span class=o>=</span> <span class=n>engine</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>batch</span>
+    <span class=n>y_pred</span><span class=p>,</span> <span class=n>y</span> <span class=o>=</span> <span class=n>engine</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>output</span>
+    <span class=c1># y_pred is log softmax value</span>
+    <span class=n>num_x</span> <span class=o>=</span> <span class=n>num_y</span> <span class=o>=</span> <span class=mi>8</span>
+    <span class=n>le</span> <span class=o>=</span> <span class=n>num_x</span> <span class=o>*</span> <span class=n>num_y</span>
+    <span class=n>probs</span><span class=p>,</span> <span class=n>preds</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>max</span><span class=p>(</span><span class=n>torch</span><span class=o>.</span><span class=n>exp</span><span class=p>(</span><span class=n>y_pred</span><span class=p>[:</span><span class=n>le</span><span class=p>]),</span> <span class=n>dim</span><span class=o>=</span><span class=mi>1</span><span class=p>)</span>
+    <span class=n>fig</span> <span class=o>=</span> <span class=n>plt</span><span class=o>.</span><span class=n>figure</span><span class=p>(</span><span class=n>figsize</span><span class=o>=</span><span class=p>(</span><span class=mi>20</span><span class=p>,</span> <span class=mi>20</span><span class=p>))</span>
+    <span class=k>for</span> <span class=n>idx</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=n>le</span><span class=p>):</span>
+        <span class=n>ax</span> <span class=o>=</span> <span class=n>fig</span><span class=o>.</span><span class=n>add_subplot</span><span class=p>(</span><span class=n>num_x</span><span class=p>,</span> <span class=n>num_y</span><span class=p>,</span> <span class=n>idx</span> <span class=o>+</span> <span class=mi>1</span><span class=p>,</span> <span class=n>xticks</span><span class=o>=</span><span class=p>[],</span> <span class=n>yticks</span><span class=o>=</span><span class=p>[])</span>
+        <span class=n>ax</span><span class=o>.</span><span class=n>imshow</span><span class=p>(</span><span class=n>x</span><span class=p>[</span><span class=n>idx</span><span class=p>]</span><span class=o>.</span><span class=n>squeeze</span><span class=p>(),</span> <span class=n>cmap</span><span class=o>=</span><span class=s2>&#34;Greys&#34;</span><span class=p>)</span>
+        <span class=n>ax</span><span class=o>.</span><span class=n>set_title</span><span class=p>(</span><span class=s2>&#34;{0} {1:.1f}% (label: {2})&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span>
+            <span class=n>preds</span><span class=p>[</span><span class=n>idx</span><span class=p>],</span>
+            <span class=n>probs</span><span class=p>[</span><span class=n>idx</span><span class=p>]</span> <span class=o>*</span> <span class=mf>100.0</span><span class=p>,</span>
+            <span class=n>y</span><span class=p>[</span><span class=n>idx</span><span class=p>]),</span>
+            <span class=n>color</span><span class=o>=</span><span class=p>(</span><span class=s2>&#34;green&#34;</span> <span class=k>if</span> <span class=n>preds</span><span class=p>[</span><span class=n>idx</span><span class=p>]</span> <span class=o>==</span> <span class=n>y</span><span class=p>[</span><span class=n>idx</span><span class=p>]</span> <span class=k>else</span> <span class=s2>&#34;red&#34;</span><span class=p>)</span>
+        <span class=p>)</span>
+    <span class=n>logger</span><span class=o>.</span><span class=n>writer</span><span class=o>.</span><span class=n>add_figure</span><span class=p>(</span><span class=s1>&#39;predictions vs actuals&#39;</span><span class=p>,</span> <span class=n>figure</span><span class=o>=</span><span class=n>fig</span><span class=p>,</span> <span class=n>global_step</span><span class=o>=</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>)</span>
+
+<span class=c1># Attach custom function to evaluator at first iteration</span>
+<span class=n>tb_logger</span><span class=o>.</span><span class=n>attach</span><span class=p>(</span>
+    <span class=n>evaluator</span><span class=p>,</span>
+    <span class=n>log_handler</span><span class=o>=</span><span class=n>predictions_gt_images_handler</span><span class=p>,</span>
+    <span class=n>event_name</span><span class=o>=</span><span class=n>Events</span><span class=o>.</span><span class=n>ITERATION_COMPLETED</span><span class=p>(</span><span class=n>once</span><span class=o>=</span><span class=mi>1</span><span class=p>),</span>
+<span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>All that is left to do now is to run the <code>trainer</code> on data from <code>train_loader</code> for a number of epochs.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=n>trainer</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>train_loader</span><span class=p>,</span> <span class=n>max_epochs</span><span class=o>=</span><span class=mi>5</span><span class=p>)</span>
+
+<span class=c1># Once everything is done, let&#39;s close the logger</span>
+<span class=n>tb_logger</span><span class=o>.</span><span class=n>close</span><span class=p>()</span>
+</code></pre></td></tr></table></div></div><p>We can inspect results using <code>tensorboard</code>. We can observe two tabs &ldquo;Scalars&rdquo; and &ldquo;Images&rdquo;.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=o>%</span><span class=n>load_ext</span> <span class=n>tensorboard</span>
+
+<span class=o>%</span><span class=n>tensorboard</span> <span class=o>--</span><span class=n>logdir</span><span class=o>=.</span>
+</code></pre></td></tr></table></div></div><h2 id=5-takeaways>5 takeaways</h2><ul><li><p>Almost any training logic can be coded as a <code>train_step</code> method and a trainer built using this method.</p></li><li><p>The essence of the library is the <code>Engine</code> class that loops a given number of times over a dataset and executes a processing function.</p></li><li><p>A highly customizable <strong>event system</strong> simplifies interaction with the engine on each step of the run.</p></li><li><p>PyTorch-Ignite provides a set of built-in handlers and metrics for common tasks.</p></li><li><p>PyTorch-Ignite is easy to extend.</p></li></ul><h2 id=advanced-features>Advanced features</h2><p>In this section we would like to present some advanced features of PyTorch-Ignite for experienced users. We will cover events, handlers and metrics in more detail, as well as distributed computations on GPUs and TPUs. Feel free to skip this section now and come back later if you are a beginner.</p><h2 id=power-of-events--handlers>Power of Events & Handlers</h2><p>We have seen throughout the quick-start example that events and handlers are perfect to execute any number of functions whenever you wish. In addition to that we provide several ways to extend it even more by</p><ul><li><p>Built-in events filtering</p></li><li><p>Stacking events to share the action</p></li><li><p>Adding custom events to go beyond built-in standard events</p></li></ul><p>Let&rsquo;s look at these features in more detail.</p><h3 id=built-in-events-filtering>Built-in events filtering</h3><p>Users can simply filter out events to skip triggering the handler. Let&rsquo;s create a dummy trainer:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.engine</span> <span class=kn>import</span> <span class=n>Engine</span><span class=p>,</span> <span class=n>Events</span>
+
+<span class=n>trainer</span> <span class=o>=</span> <span class=n>Engine</span><span class=p>(</span><span class=k>lambda</span> <span class=n>e</span><span class=p>,</span> <span class=n>batch</span><span class=p>:</span> <span class=bp>None</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>Let&rsquo;s consider a use-case where we would like to train a model and periodically run its validation on several development datasets, e.g. <code>devset1</code> and <code>devset2</code>:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=c1># We run the validation on devset1 every 5 epochs</span>
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>(</span><span class=n>every</span><span class=o>=</span><span class=mi>5</span><span class=p>))</span>
+<span class=k>def</span> <span class=nf>run_validation1</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Epoch {}: Validation on devset 1&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>))</span>
+    <span class=c1># evaluator.run(devset1)  # commented out for demo purposes</span>
+
+<span class=c1># We run another validation on devset2 every 10 epochs</span>
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>(</span><span class=n>every</span><span class=o>=</span><span class=mi>10</span><span class=p>))</span>
+<span class=k>def</span> <span class=nf>run_validation2</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Epoch {}: Validation on devset 2&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>))</span>
+    <span class=c1># evaluator.run(devset2)  # commented out for demo purposes</span>
+
+<span class=n>train_data</span> <span class=o>=</span> <span class=p>[</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>3</span><span class=p>,</span> <span class=mi>4</span><span class=p>]</span>
+<span class=n>trainer</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>train_data</span><span class=p>,</span> <span class=n>max_epochs</span><span class=o>=</span><span class=mi>50</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>Let&rsquo;s now consider another situation where we would like to make a single change once we reach a certain epoch or iteration. For example, let&rsquo;s change the training dataset on the 5-th epoch from low resolution images to high resolution images:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=k>def</span> <span class=nf>train_step</span><span class=p>(</span><span class=n>e</span><span class=p>,</span> <span class=n>batch</span><span class=p>):</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Epoch {} - {} : batch={}&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>e</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>,</span> <span class=n>e</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>iteration</span><span class=p>,</span> <span class=n>batch</span><span class=p>))</span>
+
+<span class=n>trainer</span> <span class=o>=</span> <span class=n>Engine</span><span class=p>(</span><span class=n>train_step</span><span class=p>)</span>
+
+<span class=n>small_res_data</span> <span class=o>=</span> <span class=p>[</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=p>]</span>
+<span class=n>high_res_data</span> <span class=o>=</span> <span class=p>[</span><span class=mi>10</span><span class=p>,</span> <span class=mi>11</span><span class=p>,</span> <span class=mi>12</span><span class=p>]</span>
+
+<span class=c1># We run the following handler once on 5-th epoch started</span>
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_STARTED</span><span class=p>(</span><span class=n>once</span><span class=o>=</span><span class=mi>5</span><span class=p>))</span>
+<span class=k>def</span> <span class=nf>change_train_dataset</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Epoch {}: Change training dataset&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>))</span>
+    <span class=n>trainer</span><span class=o>.</span><span class=n>set_data</span><span class=p>(</span><span class=n>high_res_data</span><span class=p>)</span>
+
+<span class=n>trainer</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>small_res_data</span><span class=p>,</span> <span class=n>max_epochs</span><span class=o>=</span><span class=mi>10</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>Let&rsquo;s now consider another situation where we would like to trigger a handler with completely custom logic. For example, we would like to dump model gradients if the training loss satisfies a certain condition:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=c1># Let&#39;s predefine for simplicity training losses</span>
+<span class=n>train_losses</span> <span class=o>=</span> <span class=p>[</span><span class=mf>2.0</span><span class=p>,</span> <span class=mf>1.9</span><span class=p>,</span> <span class=mf>1.7</span><span class=p>,</span> <span class=mf>1.5</span><span class=p>,</span> <span class=mf>1.6</span><span class=p>,</span> <span class=mf>1.2</span><span class=p>,</span> <span class=mf>0.9</span><span class=p>,</span> <span class=mf>0.8</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=mf>0.8</span><span class=p>,</span> <span class=mf>0.7</span><span class=p>,</span> <span class=mf>0.4</span><span class=p>,</span> <span class=mf>0.2</span><span class=p>,</span> <span class=mf>0.1</span><span class=p>,</span> <span class=mf>0.1</span><span class=p>,</span> <span class=mf>0.01</span><span class=p>]</span>
+
+<span class=n>trainer</span> <span class=o>=</span> <span class=n>Engine</span><span class=p>(</span><span class=k>lambda</span> <span class=n>e</span><span class=p>,</span> <span class=n>batch</span><span class=p>:</span> <span class=n>train_losses</span><span class=p>[</span><span class=n>e</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>iteration</span> <span class=o>-</span> <span class=mi>1</span><span class=p>])</span>
+
+<span class=c1># We define our custom logic when to execute a handler</span>
+<span class=k>def</span> <span class=nf>custom_event_filter</span><span class=p>(</span><span class=n>trainer</span><span class=p>,</span> <span class=n>event</span><span class=p>):</span>
+    <span class=k>if</span> <span class=mf>0.1</span> <span class=o>&lt;</span> <span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>output</span> <span class=o>&lt;</span> <span class=mf>1.0</span><span class=p>:</span>
+        <span class=k>return</span> <span class=bp>True</span>
+    <span class=k>return</span> <span class=bp>False</span>
+
+<span class=c1># We run the following handler every iteration completed under our custom_event_filter condition:</span>
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>ITERATION_COMPLETED</span><span class=p>(</span><span class=n>event_filter</span><span class=o>=</span><span class=n>custom_event_filter</span><span class=p>))</span>
+<span class=k>def</span> <span class=nf>dump_model_grads</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;{} - loss={}: dump model grads&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>iteration</span><span class=p>,</span> <span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>output</span><span class=p>))</span>
+
+<span class=n>train_data</span> <span class=o>=</span> <span class=p>[</span><span class=mi>0</span><span class=p>,</span> <span class=p>]</span>
+<span class=n>trainer</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>train_data</span><span class=p>,</span> <span class=n>max_epochs</span><span class=o>=</span><span class=nb>len</span><span class=p>(</span><span class=n>train_losses</span><span class=p>))</span>
+</code></pre></td></tr></table></div></div><h3 id=stack-events-to-share-the-action>Stack events to share the action</h3><p>A user can trigger the same handler on events of differen types. For example, let&rsquo;s run a handler for model&rsquo;s validation every 3 epochs and when the training is completed:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span><span class=lnt>9
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=n>trainer</span> <span class=o>=</span> <span class=n>Engine</span><span class=p>(</span><span class=k>lambda</span> <span class=n>e</span><span class=p>,</span> <span class=n>batch</span><span class=p>:</span> <span class=bp>None</span><span class=p>)</span>
+
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>(</span><span class=n>every</span><span class=o>=</span><span class=mi>3</span><span class=p>)</span> <span class=o>|</span> <span class=n>Events</span><span class=o>.</span><span class=n>COMPLETED</span><span class=p>)</span>
+<span class=k>def</span> <span class=nf>run_validation</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;Epoch {} - event={}: Validation&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>epoch</span><span class=p>,</span> <span class=n>trainer</span><span class=o>.</span><span class=n>last_event_name</span><span class=p>))</span>
+    <span class=c1># evaluator.run(devset)</span>
+
+<span class=n>train_data</span> <span class=o>=</span> <span class=p>[</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>3</span><span class=p>,</span> <span class=mi>4</span><span class=p>]</span>
+<span class=n>trainer</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>train_data</span><span class=p>,</span> <span class=n>max_epochs</span><span class=o>=</span><span class=mi>20</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><h3 id=add-custom-events>Add custom events</h3><p>A user can add their own events to go beyond built-in standard events. For example, let&rsquo;s define new events related to backward and optimizer step calls. This can help us to attach specific handlers on these events in a configurable manner.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>from</span> <span class=nn>ignite.engine</span> <span class=kn>import</span> <span class=n>EventEnum</span>
+
+
+<span class=k>class</span> <span class=nc>BackpropEvents</span><span class=p>(</span><span class=n>EventEnum</span><span class=p>):</span>
+    <span class=n>BACKWARD_STARTED</span> <span class=o>=</span> <span class=s1>&#39;backward_started&#39;</span>
+    <span class=n>BACKWARD_COMPLETED</span> <span class=o>=</span> <span class=s1>&#39;backward_completed&#39;</span>
+    <span class=n>OPTIM_STEP_COMPLETED</span> <span class=o>=</span> <span class=s1>&#39;optim_step_completed&#39;</span>
+
+
+<span class=k>def</span> <span class=nf>update</span><span class=p>(</span><span class=n>engine</span><span class=p>,</span> <span class=n>batch</span><span class=p>):</span>
+    <span class=c1># ...</span>
+    <span class=c1># loss = criterion(y_pred, y)</span>
+    <span class=n>engine</span><span class=o>.</span><span class=n>fire_event</span><span class=p>(</span><span class=n>BackpropEvents</span><span class=o>.</span><span class=n>BACKWARD_STARTED</span><span class=p>)</span>
+    <span class=c1># loss.backward()</span>
+    <span class=n>engine</span><span class=o>.</span><span class=n>fire_event</span><span class=p>(</span><span class=n>BackpropEvents</span><span class=o>.</span><span class=n>BACKWARD_COMPLETED</span><span class=p>)</span>
+    <span class=c1># optimizer.step()</span>
+    <span class=n>engine</span><span class=o>.</span><span class=n>fire_event</span><span class=p>(</span><span class=n>BackpropEvents</span><span class=o>.</span><span class=n>OPTIM_STEP_COMPLETED</span><span class=p>)</span>
+    <span class=c1># ...</span>
+
+<span class=n>trainer</span> <span class=o>=</span> <span class=n>Engine</span><span class=p>(</span><span class=n>update</span><span class=p>)</span>
+<span class=n>trainer</span><span class=o>.</span><span class=n>register_events</span><span class=p>(</span><span class=o>*</span><span class=n>BackpropEvents</span><span class=p>)</span>
+
+<span class=k>def</span> <span class=nf>function_before_backprop</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;{} - before backprop&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>iteration</span><span class=p>))</span>
+
+<span class=n>trainer</span><span class=o>.</span><span class=n>add_event_handler</span><span class=p>(</span><span class=n>BackpropEvents</span><span class=o>.</span><span class=n>BACKWARD_STARTED</span><span class=p>,</span> <span class=n>function_before_backprop</span><span class=p>)</span>
+
+<span class=k>def</span> <span class=nf>function_after_backprop</span><span class=p>():</span>
+    <span class=k>print</span><span class=p>(</span><span class=s2>&#34;{} - after backprop&#34;</span><span class=o>.</span><span class=n>format</span><span class=p>(</span><span class=n>trainer</span><span class=o>.</span><span class=n>state</span><span class=o>.</span><span class=n>iteration</span><span class=p>))</span>
+
+<span class=n>trainer</span><span class=o>.</span><span class=n>add_event_handler</span><span class=p>(</span><span class=n>BackpropEvents</span><span class=o>.</span><span class=n>BACKWARD_COMPLETED</span><span class=p>,</span> <span class=n>function_after_backprop</span><span class=p>)</span>
+
+<span class=n>train_data</span> <span class=o>=</span> <span class=p>[</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>3</span><span class=p>,</span> <span class=mi>4</span><span class=p>]</span>
+<span class=n>trainer</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>train_data</span><span class=p>,</span> <span class=n>max_epochs</span><span class=o>=</span><span class=mi>2</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><h2 id=out-of-the-box-metrics>Out-of-the-box metrics</h2><p>PyTorch-Ignite provides an ensemble of metrics dedicated to many Deep Learning tasks (classification, regression, segmentation, etc.). Most of these metrics provide a way to compute various quantities of interest in an online fashion without having to store the entire output history of a model.</p><ul><li>For classification : <code>Precision</code>, <code>Recall</code>, <code>Accuracy</code>, <code>ConfusionMatrix</code> and more!</li><li>For segmentation : <code>DiceCoefficient</code>, <code>IoU</code>, <code>mIOU</code> and more!</li><li>~20 regression metrics, e.g. <code>MSE</code>, <code>MAE</code>, <code>MedianAbsoluteError</code>, etc</li><li>Metrics that store the entire output history per epoch<ul><li>Possible to use with scikit-learn metrics, e.g. <code>EpochMetric</code>, <code>AveragePrecision</code>, <code>ROC_AUC</code>, etc</li></ul></li><li>Easily composable to assemble a custom metric</li><li>Easily extendable to create custom metrics</li></ul><p>Complete lists of metrics provided by PyTorch-Ignite can be found <a href=https://pytorch.org/ignite/metrics.html#complete-list-of-metrics>here</a> for <code>ignite.metrics</code> and <a href=https://pytorch.org/ignite/contrib/metrics.html#ignite-contrib-metrics>here</a> for <code>ignite.contrib.metrics</code>.</p><p>Two kinds of public APIs are provided:</p><ul><li>metric is attached to <code>Engine</code></li><li>metric&rsquo;s <code>reset</code>, <code>update</code>, <code>compute</code> methods</li></ul><h3 id=more-on-the-reset-update-compute-public-api>More on the <code>reset</code>, <code>update</code>, <code>compute</code> public API</h3><p>Let&rsquo;s demonstrate this API on a simple example using the <code>Accuracy</code> metric. The idea behind this API is that we accumulate internally certain counters on each <code>update</code> call. The metric&rsquo;s value is computed on each <code>compute</code> call and counters are reset on each <code>reset</code> call.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>import</span> <span class=nn>torch</span>
+<span class=kn>from</span> <span class=nn>ignite.metrics</span> <span class=kn>import</span> <span class=n>Accuracy</span>
+
+<span class=n>acc</span> <span class=o>=</span> <span class=n>Accuracy</span><span class=p>()</span>
+
+<span class=c1># Start accumulation</span>
+<span class=n>acc</span><span class=o>.</span><span class=n>reset</span><span class=p>()</span>
+
+<span class=n>y_target</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>1</span><span class=p>,])</span>
+<span class=c1># y_pred is logits computed by the model</span>
+<span class=n>y_pred</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span>
+    <span class=p>[</span><span class=mf>10.0</span><span class=p>,</span> <span class=mf>0.1</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>],</span>  <span class=c1># correct</span>
+    <span class=p>[</span><span class=mf>2.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>2.0</span><span class=p>],</span>  <span class=c1># incorrect</span>
+    <span class=p>[</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>4.0</span><span class=p>],</span>   <span class=c1># correct</span>
+    <span class=p>[</span><span class=mf>0.0</span><span class=p>,</span> <span class=mf>5.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>],</span>   <span class=c1># correct</span>
+<span class=p>])</span>
+<span class=n>acc</span><span class=o>.</span><span class=n>update</span><span class=p>((</span><span class=n>y_pred</span><span class=p>,</span> <span class=n>y_target</span><span class=p>))</span>
+
+<span class=c1># Compute accuracy on 4 samples</span>
+<span class=k>print</span><span class=p>(</span><span class=s2>&#34;After 1st update, accuracy=&#34;</span><span class=p>,</span> <span class=n>acc</span><span class=o>.</span><span class=n>compute</span><span class=p>())</span>
+
+<span class=n>y_target</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span><span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mi>2</span><span class=p>])</span>
+<span class=c1># y_pred is logits computed by the model</span>
+<span class=n>y_pred</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span>
+    <span class=p>[</span><span class=mf>2.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>],</span>   <span class=c1># incorrect</span>
+    <span class=p>[</span><span class=mf>0.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>2.0</span><span class=p>],</span>   <span class=c1># incorrect</span>
+    <span class=p>[</span><span class=mf>2.6</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>4.0</span><span class=p>],</span>   <span class=c1># correct</span>
+    <span class=p>[</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>3.0</span><span class=p>,</span> <span class=mf>2.0</span><span class=p>],</span>   <span class=c1># correct</span>
+<span class=p>])</span>
+<span class=n>acc</span><span class=o>.</span><span class=n>update</span><span class=p>((</span><span class=n>y_pred</span><span class=p>,</span> <span class=n>y_target</span><span class=p>))</span>
+
+<span class=c1># Compute accuracy on 8 samples</span>
+<span class=k>print</span><span class=p>(</span><span class=s2>&#34;After 2nd update, accuracy=&#34;</span><span class=p>,</span> <span class=n>acc</span><span class=o>.</span><span class=n>compute</span><span class=p>())</span>
+</code></pre></td></tr></table></div></div><h3 id=composable-metrics>Composable metrics</h3><p>Users can compose their own metrics with ease from existing ones using arithmetic operations or PyTorch methods. For example, an error metric defined as <code>100 * (1.0 - accuracy)</code> can be coded in a straightforward manner:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>import</span> <span class=nn>torch</span>
+<span class=kn>from</span> <span class=nn>ignite.metrics</span> <span class=kn>import</span> <span class=n>Accuracy</span>
+
+<span class=n>acc</span> <span class=o>=</span> <span class=n>Accuracy</span><span class=p>()</span>
+<span class=n>error</span> <span class=o>=</span> <span class=mf>100.0</span> <span class=o>*</span> <span class=p>(</span><span class=mf>1.0</span> <span class=o>-</span> <span class=n>acc</span><span class=p>)</span>
+
+<span class=c1># Start accumulation</span>
+<span class=n>acc</span><span class=o>.</span><span class=n>reset</span><span class=p>()</span>
+
+<span class=n>y_target</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span><span class=mi>0</span><span class=p>,</span> <span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>1</span><span class=p>,])</span>
+<span class=c1># y_pred is logits computed by the model</span>
+<span class=n>y_pred</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span>
+    <span class=p>[</span><span class=mf>10.0</span><span class=p>,</span> <span class=mf>0.1</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>],</span>  <span class=c1># correct</span>
+    <span class=p>[</span><span class=mf>2.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>2.0</span><span class=p>],</span>  <span class=c1># incorrect</span>
+    <span class=p>[</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>,</span> <span class=mf>4.0</span><span class=p>],</span>   <span class=c1># correct</span>
+    <span class=p>[</span><span class=mf>0.0</span><span class=p>,</span> <span class=mf>5.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>],</span>   <span class=c1># correct</span>
+<span class=p>])</span>
+<span class=n>acc</span><span class=o>.</span><span class=n>update</span><span class=p>((</span><span class=n>y_pred</span><span class=p>,</span> <span class=n>y_target</span><span class=p>))</span>
+
+<span class=c1># Compute error on 4 samples</span>
+<span class=k>print</span><span class=p>(</span><span class=s2>&#34;After 1st update, error=&#34;</span><span class=p>,</span> <span class=n>error</span><span class=o>.</span><span class=n>compute</span><span class=p>())</span>
+
+<span class=n>y_target</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span><span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>0</span><span class=p>,</span> <span class=mi>2</span><span class=p>])</span>
+<span class=c1># y_pred is logits computed by the model</span>
+<span class=n>y_pred</span> <span class=o>=</span> <span class=n>torch</span><span class=o>.</span><span class=n>tensor</span><span class=p>([</span>
+    <span class=p>[</span><span class=mf>2.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>1.0</span><span class=p>],</span>   <span class=c1># incorrect</span>
+    <span class=p>[</span><span class=mf>0.0</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>2.0</span><span class=p>],</span>   <span class=c1># incorrect</span>
+    <span class=p>[</span><span class=mf>2.6</span><span class=p>,</span> <span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>4.0</span><span class=p>],</span>   <span class=c1># correct</span>
+    <span class=p>[</span><span class=mf>1.0</span><span class=p>,</span> <span class=o>-</span><span class=mf>3.0</span><span class=p>,</span> <span class=mf>2.0</span><span class=p>],</span>   <span class=c1># correct</span>
+<span class=p>])</span>
+<span class=n>acc</span><span class=o>.</span><span class=n>update</span><span class=p>((</span><span class=n>y_pred</span><span class=p>,</span> <span class=n>y_target</span><span class=p>))</span>
+
+<span class=c1># Compute err on 8 samples</span>
+<span class=k>print</span><span class=p>(</span><span class=s2>&#34;After 2nd update, error=&#34;</span><span class=p>,</span> <span class=n>error</span><span class=o>.</span><span class=n>compute</span><span class=p>())</span>
+</code></pre></td></tr></table></div></div><p>In case a custom metric can not be expressed as arithmetic operations of base metrics, please follow this guide to implement the custom metric.</p><h2 id=out-of-the-box-handlers>Out-of-the-box handlers</h2><p>PyTorch-Ignite provides various commonly used handlers to simplify application code:</p><ul><li>Common training handlers: <code>Checkpoint</code>, <code>EarlyStopping</code>, <code>Timer</code>, <code>TerminateOnNan</code></li><li>Optimizer&rsquo;s parameter scheduling (learning rate, momentum, etc.)<ul><li>concatenate schedulers, add warm-up, cyclical scheduling, piecewise-linear scheduling, and more! See <a href=https://pytorch.org/ignite/contrib/handlers.html#more-on-parameter-scheduling>examples</a>.</li></ul></li><li>Time profiling</li><li>Logging to experiment tracking systems:<ul><li>Tensorboard, Visdom, MLflow, Polyaxon, Neptune, Trains, etc.</li></ul></li></ul><p>Complete lists of handlers provided by PyTorch-Ignite can be found <a href=https://pytorch.org/ignite/handlers.html#complete-list-of-handlers>here</a> for <code>ignite.handlers</code> and <a href=https://pytorch.org/ignite/contrib/handlers.html#ignite-contrib-handlers>here</a> for <code>ignite.contrib.handlers</code>.</p><h3 id=common-training-handlers-1>Common training handlers</h3><p>With the out-of-the-box <code>Checkpoint</code> handler, a user can easily save the training state or best models to the filesystem or a cloud.</p><p><code>EarlyStopping</code> and <code>TerminateOnNan</code> helps to stop the training if overfitting or diverging.</p><p>All those things can be easily added to the trainer one by one or with <a href=https://pytorch.org/ignite/contrib/engines.html#module-ignite.contrib.engines.common>helper methods</a>.</p><p>Let&rsquo;s consider an example of using helper methods.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=kn>import</span> <span class=nn>torch</span>
+<span class=kn>import</span> <span class=nn>torch.nn</span> <span class=kn>as</span> <span class=nn>nn</span>
+<span class=kn>import</span> <span class=nn>torch.optim</span> <span class=kn>as</span> <span class=nn>optim</span>
+
+<span class=kn>from</span> <span class=nn>ignite.engine</span> <span class=kn>import</span> <span class=n>create_supervised_trainer</span><span class=p>,</span> <span class=n>create_supervised_evaluator</span><span class=p>,</span> <span class=n>Events</span>
+<span class=kn>from</span> <span class=nn>ignite.metrics</span> <span class=kn>import</span> <span class=n>Accuracy</span>
+<span class=kn>import</span> <span class=nn>ignite.contrib.engines.common</span> <span class=kn>as</span> <span class=nn>common</span>
+
+<span class=n>train_data</span> <span class=o>=</span> <span class=p>[[</span><span class=n>torch</span><span class=o>.</span><span class=n>rand</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=mi>4</span><span class=p>),</span> <span class=n>torch</span><span class=o>.</span><span class=n>randint</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=mi>5</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=p>))]</span> <span class=k>for</span> <span class=n>_</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=mi>10</span><span class=p>)]</span>
+<span class=n>val_data</span> <span class=o>=</span> <span class=p>[[</span><span class=n>torch</span><span class=o>.</span><span class=n>rand</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=mi>4</span><span class=p>),</span> <span class=n>torch</span><span class=o>.</span><span class=n>randint</span><span class=p>(</span><span class=mi>0</span><span class=p>,</span> <span class=mi>5</span><span class=p>,</span> <span class=n>size</span><span class=o>=</span><span class=p>(</span><span class=mi>2</span><span class=p>,</span> <span class=p>))]</span> <span class=k>for</span> <span class=n>_</span> <span class=ow>in</span> <span class=nb>range</span><span class=p>(</span><span class=mi>10</span><span class=p>)]</span>
+<span class=n>epoch_length</span> <span class=o>=</span> <span class=nb>len</span><span class=p>(</span><span class=n>train_data</span><span class=p>)</span>
+
+<span class=n>model</span> <span class=o>=</span> <span class=n>nn</span><span class=o>.</span><span class=n>Linear</span><span class=p>(</span><span class=mi>4</span><span class=p>,</span> <span class=mi>5</span><span class=p>)</span>
+<span class=n>optimizer</span> <span class=o>=</span> <span class=n>optim</span><span class=o>.</span><span class=n>SGD</span><span class=p>(</span><span class=n>model</span><span class=o>.</span><span class=n>parameters</span><span class=p>(),</span> <span class=n>lr</span><span class=o>=</span><span class=mf>0.01</span><span class=p>)</span>
+<span class=c1># step_size is expressed in iterations</span>
+<span class=n>lr_scheduler</span> <span class=o>=</span> <span class=n>optim</span><span class=o>.</span><span class=n>lr_scheduler</span><span class=o>.</span><span class=n>StepLR</span><span class=p>(</span><span class=n>optimizer</span><span class=p>,</span> <span class=n>step_size</span><span class=o>=</span><span class=n>epoch_length</span><span class=p>,</span> <span class=n>gamma</span><span class=o>=</span><span class=mf>0.88</span><span class=p>)</span>
+
+<span class=c1># Let&#39;s define some dummy trainer and evaluator</span>
+<span class=n>trainer</span> <span class=o>=</span> <span class=n>create_supervised_trainer</span><span class=p>(</span><span class=n>model</span><span class=p>,</span> <span class=n>optimizer</span><span class=p>,</span> <span class=n>nn</span><span class=o>.</span><span class=n>CrossEntropyLoss</span><span class=p>())</span>
+<span class=n>evaluator</span> <span class=o>=</span> <span class=n>create_supervised_evaluator</span><span class=p>(</span><span class=n>model</span><span class=p>,</span> <span class=n>metrics</span><span class=o>=</span><span class=p>{</span><span class=s2>&#34;accuracy&#34;</span><span class=p>:</span> <span class=n>Accuracy</span><span class=p>()})</span>
+
+
+<span class=nd>@trainer.on</span><span class=p>(</span><span class=n>Events</span><span class=o>.</span><span class=n>EPOCH_COMPLETED</span><span class=p>)</span>
+<span class=k>def</span> <span class=nf>run_validation</span><span class=p>():</span>
+    <span class=n>evaluator</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>val_data</span><span class=p>)</span>
+
+<span class=c1># training state to save</span>
+<span class=n>to_save</span> <span class=o>=</span> <span class=p>{</span>
+    <span class=s2>&#34;trainer&#34;</span><span class=p>:</span> <span class=n>trainer</span><span class=p>,</span> <span class=s2>&#34;model&#34;</span><span class=p>:</span> <span class=n>model</span><span class=p>,</span>
+    <span class=s2>&#34;optimizer&#34;</span><span class=p>:</span> <span class=n>optimizer</span><span class=p>,</span> <span class=s2>&#34;lr_scheduler&#34;</span><span class=p>:</span> <span class=n>lr_scheduler</span>
+<span class=p>}</span>
+<span class=n>metric_names</span> <span class=o>=</span> <span class=p>[</span><span class=s2>&#34;batch loss&#34;</span><span class=p>,</span> <span class=p>]</span>
+
+<span class=n>common</span><span class=o>.</span><span class=n>setup_common_training_handlers</span><span class=p>(</span>
+    <span class=n>trainer</span><span class=o>=</span><span class=n>trainer</span><span class=p>,</span>
+    <span class=n>to_save</span><span class=o>=</span><span class=n>to_save</span><span class=p>,</span>
+    <span class=n>output_path</span><span class=o>=</span><span class=s2>&#34;checkpoints&#34;</span><span class=p>,</span>
+    <span class=n>save_every_iters</span><span class=o>=</span><span class=n>epoch_length</span><span class=p>,</span>
+    <span class=n>lr_scheduler</span><span class=o>=</span><span class=n>lr_scheduler</span><span class=p>,</span>
+    <span class=n>output_names</span><span class=o>=</span><span class=n>metric_names</span><span class=p>,</span>
+    <span class=n>with_pbars</span><span class=o>=</span><span class=bp>True</span><span class=p>,</span>
+<span class=p>)</span>
+
+<span class=n>tb_logger</span> <span class=o>=</span> <span class=n>common</span><span class=o>.</span><span class=n>setup_tb_logging</span><span class=p>(</span><span class=s2>&#34;tb_logs&#34;</span><span class=p>,</span> <span class=n>trainer</span><span class=p>,</span> <span class=n>optimizer</span><span class=p>,</span> <span class=n>evaluators</span><span class=o>=</span><span class=n>evaluator</span><span class=p>)</span>
+
+<span class=n>common</span><span class=o>.</span><span class=n>save_best_model_by_val_score</span><span class=p>(</span>
+    <span class=s2>&#34;best_models&#34;</span><span class=p>,</span>
+    <span class=n>evaluator</span><span class=o>=</span><span class=n>evaluator</span><span class=p>,</span>
+    <span class=n>model</span><span class=o>=</span><span class=n>model</span><span class=p>,</span>
+    <span class=n>metric_name</span><span class=o>=</span><span class=s2>&#34;accuracy&#34;</span><span class=p>,</span>
+    <span class=n>n_saved</span><span class=o>=</span><span class=mi>2</span><span class=p>,</span>
+    <span class=n>trainer</span><span class=o>=</span><span class=n>trainer</span><span class=p>,</span>
+    <span class=n>tag</span><span class=o>=</span><span class=s2>&#34;val&#34;</span><span class=p>,</span>
+<span class=p>)</span>
+
+<span class=n>trainer</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>train_data</span><span class=p>,</span> <span class=n>max_epochs</span><span class=o>=</span><span class=mi>5</span><span class=p>)</span>
+
+<span class=n>tb_logger</span><span class=o>.</span><span class=n>close</span><span class=p>()</span>
+</code></pre></td></tr></table></div></div><p>In the above code, the <code>common.setup_common_training_handlers</code> method adds <code>TerminateOnNan</code>, adds a handler to use <code>lr_scheduler</code> (expressed in iterations), adds training state checkpointing, exposes <code>batch loss</code> output as exponential moving averaged metric for logging, and adds a progress bar to the trainer.</p><p>Next, the <code>common.setup_tb_logging</code> method returns a TensorBoard logger which is automatically configured to log trainer&rsquo;s metrics (i.e. <code>batch loss</code>), optimizer&rsquo;s learning rate and evaluator&rsquo;s metrics.</p><p>Finally, <code>common.save_best_model_by_val_score</code> sets up a handler to save the best two models according to the validation accuracy metric.</p><h3 id=distributed-and-xla-device-support>Distributed and XLA device support</h3><p>PyTorch offers a distributed communication package for writing and running parallel applications on multiple devices and machines. The native interface provides commonly used collective operations and allows to address multi-CPU and multi-GPU computations seamlessly using the torch <code>DistributedDataParallel</code> module and the well-known <code>mpi</code>, <code>gloo</code> and <code>nccl</code> backends. Recently, users can also run PyTorch on XLA devices, like TPUs, with the <code>torch_xla</code> package. However, writing distributed training code working on GPUs and TPUs is not a trivial task due to some API specificities. The purpose of the PyTorch-Ignite <code>ignite.distributed</code> package introduced in version 0.4 is to unify the code for native <code>torch.distributed</code> API, <code>torch_xla</code> API on XLA devices and also supporting other distributed frameworks (e.g. Horovod).</p><p>To make distributed configuration setup easier, the <code>Parallel</code> context manager has been introduced:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=n>code</span> <span class=o>=</span> <span class=s2>&#34;&#34;&#34;
+</span><span class=s2>import ignite.distributed as idist
+</span><span class=s2>
+</span><span class=s2>def training(local_rank, config, **kwargs):
+</span><span class=s2>    print(idist.get_rank(), &#39;: run with config:&#39;, config, &#39;- backend=&#39;, idist.backend())
+</span><span class=s2>    # do the training ...
+</span><span class=s2>
+</span><span class=s2>backend = &#39;gloo&#39; # or &#34;xla-tpu&#34; or None
+</span><span class=s2>dist_configs = {&#39;nproc_per_node&#39;: 2}  # or dist_configs = {...}
+</span><span class=s2>config = {&#39;c&#39;: 12345}
+</span><span class=s2>
+</span><span class=s2>if __name__ == &#39;__main__&#39;:
+</span><span class=s2>
+</span><span class=s2>    with idist.Parallel(backend=backend, **dist_configs) as parallel:
+</span><span class=s2>        parallel.run(training, config, a=1, b=2)
+</span><span class=s2>&#34;&#34;&#34;</span>
+<span class=err>!</span><span class=n>echo</span> <span class=s2>&#34;{code}&#34;</span> <span class=o>&gt;</span> <span class=n>main</span><span class=o>.</span><span class=n>py</span>
+<span class=err>!</span><span class=n>python</span> <span class=n>main</span><span class=o>.</span><span class=n>py</span>
+</code></pre></td></tr></table></div></div><p>The above code with a single modification can run on a GPU, single-node multiple GPUs, single or multiple TPUs etc. It can be executed with the <code>torch.distributed.launch</code> tool or by Python and spawning the required number of processes. For more details, see <a href=https://pytorch.org/ignite/distributed.html>the documentation</a>.</p><p>In addition, methods like <code>auto_model()</code>, <code>auto_optim()</code> and <code>auto_dataloader()</code> help to adapt in a transparent way the provided model, optimizer and data loaders to an existing configuration:</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre class=chroma><code class=language-py data-lang=py><span class=c1># main.py</span>
+
+<span class=kn>import</span> <span class=nn>ignite.distributed</span> <span class=kn>as</span> <span class=nn>idist</span>
+
+<span class=k>def</span> <span class=nf>training</span><span class=p>(</span><span class=n>local_rank</span><span class=p>,</span> <span class=n>config</span><span class=p>,</span> <span class=o>**</span><span class=n>kwargs</span><span class=p>):</span>
+
+    <span class=k>print</span><span class=p>(</span><span class=n>idist</span><span class=o>.</span><span class=n>get_rank</span><span class=p>(),</span> <span class=s2>&#34;: run with config:&#34;</span><span class=p>,</span> <span class=n>config</span><span class=p>,</span> <span class=s2>&#34;- backend=&#34;</span><span class=p>,</span> <span class=n>idist</span><span class=o>.</span><span class=n>backend</span><span class=p>())</span>
+
+    <span class=n>train_loader</span> <span class=o>=</span> <span class=n>idist</span><span class=o>.</span><span class=n>auto_dataloader</span><span class=p>(</span><span class=n>dataset</span><span class=p>,</span> <span class=n>batch_size</span><span class=o>=</span><span class=mi>32</span><span class=p>,</span> <span class=n>num_workers</span><span class=o>=</span><span class=mi>12</span><span class=p>,</span> <span class=n>shuffle</span><span class=o>=</span><span class=bp>True</span><span class=p>,</span> <span class=o>**</span><span class=n>kwargs</span><span class=p>)</span>
+    <span class=c1># batch size, num_workers and sampler are automatically adapted to existing configuration</span>
+    <span class=c1># ...</span>
+    <span class=n>model</span> <span class=o>=</span> <span class=n>resnet50</span><span class=p>()</span>
+    <span class=n>optimizer</span> <span class=o>=</span> <span class=n>optim</span><span class=o>.</span><span class=n>SGD</span><span class=p>(</span><span class=n>model</span><span class=o>.</span><span class=n>parameters</span><span class=p>(),</span> <span class=n>lr</span><span class=o>=</span><span class=mf>0.01</span><span class=p>)</span>
+
+    <span class=c1># if training with Nvidia/Apex for Automatic Mixed Precision (AMP)</span>
+    <span class=c1># model, optimizer = amp.initialize(model, optimizer, opt_level=opt_level)</span>
+
+    <span class=n>model</span> <span class=o>=</span> <span class=n>idist</span><span class=o>.</span><span class=n>auto_model</span><span class=p>(</span><span class=n>model</span><span class=p>)</span>
+    <span class=c1># model is DDP or DP or just itself according to existing configuration</span>
+    <span class=c1># ...</span>
+    <span class=n>optimizer</span> <span class=o>=</span> <span class=n>idist</span><span class=o>.</span><span class=n>auto_optim</span><span class=p>(</span><span class=n>optimizer</span><span class=p>)</span>
+    <span class=c1># optimizer is itself, except XLA configuration and overrides `step()` method.</span>
+    <span class=c1># User can safely call `optimizer.step()` (behind `xm.optimizer_step(optimizier)` is performed)</span>
+
+<span class=n>backend</span> <span class=o>=</span> <span class=s2>&#34;nccl&#34;</span>  <span class=c1># torch native distributed configuration on multiple GPUs</span>
+<span class=c1># backend = &#34;xla-tpu&#34;  # XLA TPUs distributed configuration</span>
+<span class=c1># backend = None  # no distributed configuration</span>
+<span class=k>with</span> <span class=n>idist</span><span class=o>.</span><span class=n>Parallel</span><span class=p>(</span><span class=n>backend</span><span class=o>=</span><span class=n>backend</span><span class=p>,</span> <span class=o>**</span><span class=n>dist_configs</span><span class=p>)</span> <span class=k>as</span> <span class=n>parallel</span><span class=p>:</span>
+    <span class=n>parallel</span><span class=o>.</span><span class=n>run</span><span class=p>(</span><span class=n>training</span><span class=p>,</span> <span class=n>config</span><span class=p>,</span> <span class=n>a</span><span class=o>=</span><span class=mi>1</span><span class=p>,</span> <span class=n>b</span><span class=o>=</span><span class=mi>2</span><span class=p>)</span>
+</code></pre></td></tr></table></div></div><p>Please note that these <code>auto_*</code> methods are optional; a user is free use some of them and manually set up certain parts of the code if required. The advantage of this approach is that there is no under the hood inevitable objects' patching and overriding.</p><p>More details about distributed helpers provided by PyTorch-Ignite can be found in <a href=https://pytorch.org/ignite/distributed.html>the documentation</a>. A complete example of training on CIFAR10 can be found <a href=https://github.com/pytorch/ignite/tree/master/examples/contrib/cifar10>here</a>.</p><p>A detailed tutorial with distributed helpers will be published in another article.</p><h1 id=projects-using-pytorch-ignite>Projects using PyTorch-Ignite</h1><p>There is a list of research papers with code, blog articles, tutorials, toolkits and other projects that are using PyTorch-Ignite. A detailed overview can be found <a href=https://github.com/pytorch/ignite#projects-using-ignite>here</a>.</p><p>To start your project using PyTorch-Ignite is simple and can require only to pass through this quick-start example and <a href=https://pytorch.org/ignite/concepts.html>library &ldquo;Concepts&rdquo;</a>.</p><p>In addition, PyTorch-Ignite also provides several tutorials:</p><ul><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/TextCNN.ipynb>Text Classification using Convolutional Neural Networks</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/VAE.ipynb>Variational Auto Encoders</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/FashionMNIST.ipynb>Convolutional Neural Networks for Classifying Fashion-MNIST Dataset</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/CycleGAN_with_nvidia_apex.ipynb>Training Cycle-GAN on Horses to Zebras with Nvidia/Apex</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/CycleGAN_with_torch_cuda_amp.ipynb>Another training Cycle-GAN on Horses to Zebras with Native Torch CUDA AMP</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/EfficientNet_Cifar100_finetuning.ipynb>Finetuning EfficientNet-B0 on CIFAR100</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/Cifar10_Ax_hyperparam_tuning.ipynb>Hyperparameters tuning with Ax</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/FastaiLRFinder_MNIST.ipynb>Basic example of LR finder on MNIST</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/Cifar100_bench_amp.ipynb>Benchmark mixed precision training on Cifar100: torch.cuda.amp vs nvidia/apex</a></li><li><a href=https://github.com/pytorch/ignite/blob/master/examples/notebooks/MNIST_on_TPU.ipynb>MNIST training on a single TPU</a></li><li><a href=https://github.com/pytorch/ignite/tree/master/examples/contrib/cifar10>CIFAR10 Training on multiple TPUs</a></li></ul><p>and examples:</p><ul><li>cifar10 (single/multi-GPU, DDP, AMP, TPUs)</li><li><a href=https://github.com/pytorch/ignite/tree/master/examples/reinforcement_learning>basic RL</a></li><li><a href=https://github.com/pytorch/ignite/tree/master/examples/references>reproducible baselines for vision tasks:</a><ul><li>classification on ImageNet (single/multi-GPU, DDP, AMP)</li><li>semantic segmentation on Pascal VOC2012 (single/multi-GPU, DDP, AMP)</li></ul></li></ul><p>The package can be installed with pip or conda. More info and guides can be found <a href=https://github.com/pytorch/ignite#installation>here</a>.</p><h1 id=project-news>Project news</h1><p>Instead of a conclusion, we will wrap up with some current project news:</p><hr><p>🎊🚄 <a href=https://app.ignite.trains.allegro.ai/>Trains Ignite server</a> is open to everyone to browse our reproducible experiment logs, compare performances and restart any run on their own <a href=https://github.com/allegroai/trains>Trains server</a> and associated infrastructure. Many thanks to the folks at <a href=https://allegro.ai/>Allegro AI</a> who are making this possible!</p><hr><p>🎉🎊 Since June 2020, PyTorch-Ignite has joined <a href=https://numfocus.org/sponsored-projects/affiliated-projects>NumFOCUS as an affiliated project</a> as well as <a href=https://labs.quansight.org/projects/>Quansight Labs</a>. We believe that it will be a new step in our project’s development, and in promoting open practices in research and industry.</p><hr><p>🎉 <a href=https://hacktoberfest.digitalocean.com/>Hacktoberfest 2020</a> is the open-source coding festival for everyone to attend in October and PyTorch-Ignite is also preparing for it. Please, check out <a href=https://github.com/pytorch/ignite/issues/1257>our announcement</a>.</p><hr><p>🎉 We are pleased to announce that we will run a mentored sprint session to contribute to PyTorch-Ignite at PyData Global 2020. We are looking forward to seeing you in November at this event!</p><hr><p>.\ | 📈💻 The project is currently maintained by a team of volunteers and we are looking for motivated contributors to help us to move the project forward. Please see the <a href=https://github.com/pytorch/ignite/blob/master/CONTRIBUTING.md>contribution guidelines</a> for more information if this sounds interesting to you.</p><hr><p>Check out the project on <a href=https://github.com/pytorch/ignite>GitHub</a> and follow us on <a href=https://twitter.com/pytorch_ignite>Twitter</a>. For any questions, support or issues, please <a href=https://github.com/pytorch/ignite#communication>reach out to us</a>. For all other questions and inquiries, please send an email to <a href=mailto:contact@pytorch-ignite.ai>contact@pytorch-ignite.ai</a></p></div><div class=prev-n-next><div class=prev></div><div class=next><a href=/posts/distributed-made-easy-with-ignite/ class=link><span class=text>Distributed Training Made Easy with PyTorch-Ignite</span><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify icon-next iconify--carbon" width="32" height="32" viewBox="0 0 32 32"><path d="M18 6l-1.43 1.393L24.15 15H4v2h20.15l-7.58 7.573L18 26l10-10L18 6z" fill="currentcolor"/></svg></a></div></div></div></section><div id=backtotop><a href=#></a></div><div class=sidebar><div class=sidebar-header><a class=sidebar-close href=javascript:void(0);><i data-feather=x></i></a><div class=text>Posts</div></div><div class=inner><aside><ul><li><a href=/posts/introducing-code-generator-v020/>Introducing PyTorch-Ignite's Code Generator v0.2.0</a></li><li><a href=/posts/distributed-made-easy-with-ignite/>Distributed Training Made Easy with PyTorch-Ignite</a></li><li><a href=/posts/2020-09-pytorch-ignite/ class=active>Introduction to PyTorch-Ignite</a><nav id=TableOfContents><ul><li><a href=#pytorch-ignite-what-and-why->PyTorch-Ignite: What and Why ?</a></li><li><a href=#-pytorch--ignite->🔥 PyTorch + Ignite 🔥</a><ul><li><a href=#about-the-design-of-pytorch-ignite>About the design of PyTorch-Ignite</a></li></ul></li><li><a href=#quick-start-example>Quick-start example</a><ul><li><a href=#common-pytorch-code>Common PyTorch code</a></li></ul></li><li><a href=#trainer-and-evaluators-setup>Trainer and evaluator&rsquo;s setup</a></li><li><a href=#events-and-handers>Events and Handers</a></li><li><a href=#model-evaluation-metrics>Model evaluation metrics</a></li><li><a href=#common-training-handlers>Common training handlers</a></li><li><a href=#5-takeaways>5 takeaways</a></li><li><a href=#advanced-features>Advanced features</a></li><li><a href=#power-of-events--handlers>Power of Events & Handlers</a><ul><li><a href=#built-in-events-filtering>Built-in events filtering</a></li><li><a href=#stack-events-to-share-the-action>Stack events to share the action</a></li><li><a href=#add-custom-events>Add custom events</a></li></ul></li><li><a href=#out-of-the-box-metrics>Out-of-the-box metrics</a><ul><li><a href=#more-on-the-reset-update-compute-public-api>More on the <code>reset</code>, <code>update</code>, <code>compute</code> public API</a></li><li><a href=#composable-metrics>Composable metrics</a></li></ul></li><li><a href=#out-of-the-box-handlers>Out-of-the-box handlers</a><ul><li><a href=#common-training-handlers-1>Common training handlers</a></li><li><a href=#distributed-and-xla-device-support>Distributed and XLA device support</a></li></ul></li></ul></nav></li></ul></aside></div></div><script src=https://cdn.jsdelivr.net/npm/jquery@2.2.4/dist/jquery.min.js></script><script src=https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js></script><script src=/js/modernizr.min.48806575a40ede5e406c8278f3be521afb171e73d324994ced6b41306bdb230a.js></script><script src=/js/fresh.js></script><script src=/js/jquery.panelslider.min.js></script><link rel=stylesheet href=/css/syntax.min.84ca75a88a5562d09268f7057015aed4c2092f04a31d084196a754689084b803.css><link rel=stylesheet href=/css/copy-code.min.878089dd803b72dd5f7d0b3fbf80963bb8e0cae8cea4404fce33ac8386c593ca.css><script src=/js/copy-code.min.202e074c00305627d6c50240703860f57f00aef8cdea3d0b66809dbdeba70e95.js></script></body></html>
